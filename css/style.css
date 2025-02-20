@@ -36,6 +36,8 @@
 }
 
 .choroplethContainer {
+    width: 750px;
+    height: 400px;
     position: relative;
 }
 

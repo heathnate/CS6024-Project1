@@ -13,26 +13,28 @@
         <h3>Nate Heath</h3>
     </div>
 
-    <svg id="scatterplot"></svg>
-
-    <!-- <div class="scatterplotOptionsContainer">
-        <div class="scatterplotOptionsLabels">
-            <div class="scatterplotXOptionLabel">X-Axis (Income)</div>
-            <div class="scatterplotYOptionLabel">Y-Axis (Health)</div>
+    <div class="scatterplotContainer">
+        <svg id="scatterplot"></svg>
+    
+        <div class="scatterplotOptionsContainer">
+            <div class="scatterplotOptionsLabels">
+                <div class="scatterplotXOptionLabel">X-Axis (Income)</div>
+                <div class="scatterplotYOptionLabel">Y-Axis (Health)</div>
+            </div>
+            <div class="scatterplotOptions">
+                <select id="scatterplotXOptions">
+                    <option class="scatterplotAttribute" value="Median Household Income (USD)">Median Household Income</option>
+                    <option class="scatterplotAttribute" value="Poverty Rate (%)">Poverty Rate</option>
+                </select>
+                <select id="scatterplotYOptions">
+                    <option class="scatterplotAttribute" value="High Blood Pressure (%)">High Blood Pressure</option>
+                    <option class="scatterplotAttribute" value="High Cholesterol (%)">High Cholesterol</option>
+                </select>
+            </div>
         </div>
-        <div class="scatterplotOptions">
-            <select id="scatterplotXOptions">
-                <option class="scatterplotAttribute" value="Median Household Income (USD)">Median Household Income</option>
-                <option class="scatterplotAttribute" value="People in Poverty (%)">People in Poverty</option>
-            </select>
-            <select id="scatterplotYOptions">
-                <option class="scatterplotAttribute" value="High Blood Pressure (%)">High Blood Pressure</option>
-                <option class="scatterplotAttribute" value="High Cholesterol(%)">High Cholesterol</option>
-            </select>
-        </div>
-    </div> -->
-
-    <div id="scatterplotTooltip"></div>
+    
+        <div id="scatterplotTooltip"></div>
+    </div>
 
     <div class="choroplethContainer">
         <svg id="choropleth"></svg>
@@ -63,7 +65,8 @@
 
     <!-- Our JS code - INCLUDING the new files-->
     <script src="js/main.js"></script>
-    <script src="js/dataformatter.js"></script>
+    <script src="js/dataFormatter.js"></script>
+    <script src="js/tooltipHelper.js"></script>
     <script src="js/scatterplot.js"></script>
     <script src="js/choropleth.js"></script>
 </body>

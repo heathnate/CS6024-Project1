@@ -1,6 +1,6 @@
 console.log('Hello!');
 
-let incomeData, healthData, choropleth, choroplethMedIncomeData, choroplethPHBPData, geoData;
+let incomeData, healthData, choropleth, choroplethMedIncomeData, choroplethPHBPData, geoData, scatterplotMedianIncomeData, scatterplotPovertyData;
 
 // Scatterplot data manipulation
 // Load both datasets asynchronously and wait for completion
@@ -11,32 +11,30 @@ Promise.all([
 .then(([incomeData, healthData]) => {
     console.log('Both datasets loaded.');
 
-    // Filter income data
-    let medianIncomeData = incomeData.filter(entry => entry.Attribute === 'MedHHInc');
-    medianIncomeData.forEach(d => {
+    // Filter income data to just median household income
+    scatterplotMedianIncomeData = incomeData.filter(entry => entry.Attribute === 'MedHHInc');
+    scatterplotMedianIncomeData.forEach(d => {
         d.Value = +d.Value;
-    })
+    });
 
-    // Create a lookup table for health data
-    let healthDataLookup = healthData.reduce((acc, row) => {
-        acc[row.cnty_fips] = row;  // Assuming 'cnty_fips' is the common key
-        return acc;
-    }, {});
+    // Filter income data to just poverty rate percentage
+    scatterplotPovertyData = incomeData.filter(entry => entry.Attribute === 'PCTPOVALL');
+    scatterplotPovertyData.forEach(d => {
+        d.Value = +d.Value;
+    });
 
-    // Merge the datasets based on FIPS
-    let mergedData = medianIncomeData
-    .filter(d => healthDataLookup[d.FIPS])  // Filter out data where there is no corresponding FIPS 
-    .map(d => ({
-        ...d,
-        ...healthDataLookup[d.FIPS]  // Ensure the keys match exactly
-    }))
-    .filter(d => d.percent_high_blood_pressure >= 0); // Remove tuples where high blood pressure data is invalid (-1)
+    healthData.forEach(d => {
+        d.percent_high_blood_pressure = +d.percent_high_blood_pressure;
+        d.percent_high_cholesterol = +d.percent_high_cholesterol;
+    });
 
-    // scatterplot = new Scatterplot({
-    //     'parentElement': '#scatterplot',
-    //     'containerHeight': 500,
-    //     'containerWidth': 500
-    // }, mergedData);
+    healthData = healthData.filter(d => d.percent_high_blood_pressure >= 0 && d.percent_high_cholesterol >= 0);
+
+    scatterplot = new Scatterplot({
+        'parentElement': '#scatterplot',
+        'containerHeight': 400,
+        'containerWidth': 400
+    }, scatterplotMedianIncomeData, healthData);
 })
 .catch(error => {
     console.error('Error: ', error);
@@ -53,7 +51,6 @@ Promise.all([
         d.percent_high_blood_pressure = +d.percent_high_blood_pressure;
     });
     healthData = localHealthData.filter(d => d.percent_high_blood_pressure >= 0);
-    console.log('Health Data: ', healthData);
     geoData = localGeoData;
     incomeData = localIncomeData;
 
@@ -78,6 +75,34 @@ Promise.all([
 })
 .catch(error => {
     console.error('Error: ', error);
+});
+
+// Scatterplot event listeners
+d3.selectAll('#scatterplotXOptions').on('change', function() {
+    let selectedAttribute = d3.select(this).property('value');
+    scatterplot.selectedXAttribute = selectedAttribute;
+
+    if (selectedAttribute === 'Median Household Income (USD)') {
+        scatterplot.xData = scatterplotMedianIncomeData;
+    }
+    else if (selectedAttribute === 'Poverty Rate (%)') {
+        scatterplot.xData = scatterplotPovertyData;
+    }
+
+    scatterplot.updateVis();
+});
+d3.selectAll('#scatterplotYOptions').on('change', function() {
+    let selectedAttribute = d3.select(this).property('value');
+    scatterplot.selectedYAttribute = selectedAttribute;
+
+    if (selectedAttribute === 'High Blood Pressure (%)') {
+        scatterplot.yValue = d => d.percent_high_blood_pressure;
+    }
+    else if (selectedAttribute === 'High Cholesterol (%)') {
+        scatterplot.yValue = d => d.percent_high_cholesterol;
+    }
+
+    scatterplot.updateVis();
 });
 
 // Choropleth event listener
@@ -121,7 +146,7 @@ d3.selectAll('#choroplethOptions').on('change', function() {
         geoData.objects.counties.geometries.forEach(d => {
             d.properties.pop = null;
             for (let i = 0; i < phbpData.length; i++) {
-                if (d.id === phbpData[i].cnty_fips) {
+                if (d.id === phbpData[i].FIPS) {
                     d.properties.pop = +phbpData[i].percent_high_blood_pressure;
                 }
             }
@@ -144,4 +169,4 @@ d3.selectAll('#choroplethOptions').on('change', function() {
     }
 
     choropleth.updateVis();
-})
+});

@@ -1,5 +1,5 @@
 class Scatterplot {
-    constructor(_config, _data) {
+    constructor(_config, _xData, _yData) {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: _config.containerWidth || 1000,
@@ -7,7 +7,26 @@ class Scatterplot {
             tooltipPadding: _config.tooltipPadding || 15,
             margin: {top: 50, right: 50, bottom: 50, left: 50},
         }
-        this.data = _data;
+        this.data;
+
+        this.selectedXAttribute = 'Median Household Income (USD)';
+        this.selectedYAttribute = 'High Blood Pressure (%)';
+
+        this.xData = _xData;
+        this.yData = _yData;
+
+        this.tooltipHelper = new TooltipHelper();
+
+        this.dataFormatter = new DataFormatter();
+        
+        // Color map that determines the color of the points based on the selected attributes
+        this.colorMap = {
+            "Median Household Income (USD)-High Blood Pressure (%)": "#a000c8",
+            "Median Household Income (USD)-High Cholesterol (%)": "#00a300",
+            "Poverty Rate (%)-High Blood Pressure (%)": "#fa6122",
+            "Poverty Rate (%)-High Cholesterol (%)": "#fcb001"
+        };
+
         this.initVis();
     }
 
@@ -16,6 +35,8 @@ class Scatterplot {
         console.log('Scatterplot!');
 
         let vis = this;
+
+        vis.data = vis.dataFormatter.mergeData(vis.xData, vis.yData);
 
         // Width and height as the inner dimensions of the chart area
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
@@ -33,13 +54,17 @@ class Scatterplot {
         vis.chart = vis.svg.append('g')
             .attr('transform', `translate(${vis.config.margin.left}, ${vis.config.margin.top})`);
 
+        // Specify accessor function
+        vis.xValue = d => d.Value;
+        vis.yValue = d => d.percent_high_blood_pressure;
+
         // Create x and y scales
         vis.xScale = d3.scaleLinear()
-            .domain([0, d3.max(vis.data, d => d.Value)])
+            .domain([0, d3.max(vis.xData, vis.xValue)])
             .range([0, vis.width])
             .nice();
         vis.yScale = d3.scaleLinear()
-            .domain([0, d3.max(vis.data, d => d.percent_high_blood_pressure)])
+            .domain([0, d3.max(vis.data, vis.yValue)])
             .range([vis.height, 0])
             .nice();
 
@@ -59,23 +84,54 @@ class Scatterplot {
             .attr('transform', `translate(0,${vis.height})`);
         vis.yAxisG = vis.chart.append('g')
             .attr('class', 'axis y-axis');
+        
+        // Append both axis titles
+        vis.chart.append('text')
+            .attr('class', 'x-axis-title')
+            .attr('y', vis.height - 15)
+            .attr('x', vis.width + 10)
+            .attr('dy', '.71em')
+            .style('text-anchor', 'end')
+            .text(vis.selectedXAttribute);
 
+        vis.svg.append('text')
+            .attr('class', 'y-axis-title')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('dy', '.71em')
+            .text(vis.selectedYAttribute);
+    
         this.updateVis();
     }
 
     updateVis() {
         let vis = this;
-    
-        // Specify accessor function
-        vis.xValue = d => d.Value;
-        vis.yValue = d => d.percent_high_blood_pressure;
+
+        // Clear scatterplot points
+        vis.chart.selectAll('.point').remove();
         
+        // Update data
+        vis.data = vis.dataFormatter.mergeData(vis.xData, vis.yData);
+
+        // Update scales
+        vis.xScale.domain([0, d3.max(vis.xData, vis.xValue)]).nice();
+        vis.yScale.domain([0, d3.max(vis.yData, vis.yValue)]).nice();
+
         // Update axes
         vis.xAxisG.call(vis.xAxis);
         vis.yAxisG.call(vis.yAxis);
 
-        this.renderVis();
+        // Select existing axis labels and update them based on the selected attribute
+        vis.svg.select('.x-axis-title')
+            .text(vis.selectedXAttribute);
+
+        vis.svg.select('.y-axis-title')
+            .text(vis.selectedYAttribute);
+
+        // Update point color
+        this.pointColor = this.colorMap[`${this.selectedXAttribute}-${this.selectedYAttribute}`];
         
+        this.renderVis();   
     }
 
     renderVis() {
@@ -84,10 +140,11 @@ class Scatterplot {
         const circles = vis.chart.selectAll('.point')
             .data(vis.data)
             .join('circle')
+                .attr('class', 'point')
                 .attr('r', 2)
                 .attr('cy', d => vis.yScale(vis.yValue(d)))
                 .attr('cx', d => vis.xScale(vis.xValue(d)))
-                .attr('fill', '#69b3a2');
+                .attr('fill', vis.pointColor);
 
         circles
             .on('mouseover', (event, d) => {
@@ -95,12 +152,12 @@ class Scatterplot {
                     .style('display', 'block')
                     .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
                     .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
-                    .html(`
-                    <div class="tooltip-title">${d.County}, ${d.State}</div>
-                    <div><i>$${d.median_household_income}</i></div>
-                    <div><i>${d.percent_high_blood_pressure}%</i></div>
-                    `);
-                // console.log(d);
+                    // .html(`
+                    // <div class="tooltip-title">${d.County}, ${d.State}</div>
+                    // <div><i>$${d.median_household_income}</i></div>
+                    // <div><i>${d.percent_high_blood_pressure}%</i></div>
+                    // `);
+                    .html(vis.tooltipHelper.getTooltipText(d, vis.selectedXAttribute, vis.selectedYAttribute));
             })
             .on('mouseleave', () => {
                 d3.select('#scatterplotTooltip').style('display', 'none');
