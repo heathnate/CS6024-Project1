@@ -4,6 +4,7 @@ class Scatterplot {
             parentElement: _config.parentElement,
             containerWidth: _config.containerWidth || 1000,
             containerHeight: _config.containerHeight || 800,
+            tooltipPadding: _config.tooltipPadding || 15,
             margin: {top: 50, right: 50, bottom: 50, left: 50},
         }
         this.data = _data;
@@ -19,6 +20,9 @@ class Scatterplot {
         // Width and height as the inner dimensions of the chart area
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
+
+        console.log("width: ", vis.width);
+        console.log("height: ", vis.height);
 
         // Define 'svg' as a child-element (g) from the drawing area and include spaces
         // Add <svg> element (drawing space)
@@ -77,13 +81,31 @@ class Scatterplot {
     renderVis() {
         let vis = this;
 
-        vis.chart.selectAll('.point')
-            .data(vis.data, d => d.Value)
+        const circles = vis.chart.selectAll('.point')
+            .data(vis.data)
             .join('circle')
                 .attr('r', 2)
                 .attr('cy', d => vis.yScale(vis.yValue(d)))
                 .attr('cx', d => vis.xScale(vis.xValue(d)))
-                .attr('fill', '#69b3a2')
+                .attr('fill', '#69b3a2');
+
+        circles
+            .on('mouseover', (event, d) => {
+                d3.select('#scatterplotTooltip')
+                    .style('display', 'block')
+                    .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
+                    .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
+                    .html(`
+                    <div class="tooltip-title">${d.County}, ${d.State}</div>
+                    <div><i>$${d.median_household_income}</i></div>
+                    <div><i>${d.percent_high_blood_pressure}%</i></div>
+                    `);
+                // console.log(d);
+            })
+            .on('mouseleave', () => {
+                d3.select('#scatterplotTooltip').style('display', 'none');
+            });
+
     }
     
 }

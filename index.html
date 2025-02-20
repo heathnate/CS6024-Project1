@@ -15,7 +15,37 @@
 
     <svg id="scatterplot"></svg>
 
-    <div class="resources">
+    <!-- <div class="scatterplotOptionsContainer">
+        <div class="scatterplotOptionsLabels">
+            <div class="scatterplotXOptionLabel">X-Axis (Income)</div>
+            <div class="scatterplotYOptionLabel">Y-Axis (Health)</div>
+        </div>
+        <div class="scatterplotOptions">
+            <select id="scatterplotXOptions">
+                <option class="scatterplotAttribute" value="Median Household Income (USD)">Median Household Income</option>
+                <option class="scatterplotAttribute" value="People in Poverty (%)">People in Poverty</option>
+            </select>
+            <select id="scatterplotYOptions">
+                <option class="scatterplotAttribute" value="High Blood Pressure (%)">High Blood Pressure</option>
+                <option class="scatterplotAttribute" value="High Cholesterol(%)">High Cholesterol</option>
+            </select>
+        </div>
+    </div> -->
+
+    <div id="scatterplotTooltip"></div>
+
+    <div class="choroplethContainer">
+        <svg id="choropleth"></svg>
+        <select id="choroplethOptions">
+            <option class="choroplethAttribute" value="median_household_income">Median Household Income</option>
+            <option class="choroplethAttribute" value="percent_high_blood_pressure">Percent High Blood Pressure</option>
+        </select>
+        <div id="choroplethTooltip"></div>
+    </div>
+    <svg height="5" width="5" xmlns="http://www.w3.org/2000/svg" version="1.1"> <defs> <pattern id="lightstripe" patternUnits="userSpaceOnUse" width="5" height="5"> <image xlink:href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgogIDxyZWN0IHdpZHRoPSc1JyBoZWlnaHQ9JzUnIGZpbGw9J3doaXRlJy8+CiAgPHBhdGggZD0nTTAgNUw1IDBaTTYgNEw0IDZaTS0xIDFMMSAtMVonIHN0cm9rZT0nIzg4OCcgc3Ryb2tlLXdpZHRoPScxJy8+Cjwvc3ZnPg==" x="0" y="0" width="5" height="5"> </image> </pattern> </defs></svg>
+
+
+    <!-- <div class="resources">
         <h4>Resources</h4>
         <ul>
             <li>UI: HTML, CSS</li>
@@ -23,12 +53,18 @@
             <li>Socioeconomic Data: <a href="https://www.ers.usda.gov/data-products/atlas-of-rural-and-small-town-america">USDA Atlas of Rural and Small-Town America</a></li>
             <li>Health Data: <a href="https://www.cdc.gov/heart-disease-stroke-atlas/about/?CDC_AAref_Val=https://www.cdc.gov/dhdsp/maps/atlas/index.htm">CDC Atlas of Heart Disease and Stroke</a></li>
         </ul>
-    </div>
+    </div> -->
+
+    
+
     <!-- D3 bundle -->
     <script src="js/d3.v6.min.js"></script>
+    <script src="js/topojson.v3.js"></script>
 
     <!-- Our JS code - INCLUDING the new files-->
     <script src="js/main.js"></script>
+    <script src="js/dataformatter.js"></script>
     <script src="js/scatterplot.js"></script>
+    <script src="js/choropleth.js"></script>
 </body>
 </html>
