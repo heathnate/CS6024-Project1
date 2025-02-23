@@ -77,6 +77,21 @@ Promise.all([
     console.error('Error: ', error);
 });
 
+// Bar chart data manipulation
+d3.csv('data/Rural_Atlas_Update24/Income.csv')
+.then(barchartIncomeData => {
+    barchartIncomeData = barchartIncomeData.filter(d => d.Attribute === 'MedHHInc');
+    barchartIncomeData.map(d => {
+        Value: +d.Value;
+    });
+
+    barchart = new BarChart({
+        parentElement: '#barchart',
+        containerWidth: 600,
+        containerHeight: 400
+    }, barchartIncomeData);
+})
+
 // Scatterplot event listeners
 d3.selectAll('#scatterplotXOptions').on('change', function() {
     let selectedAttribute = d3.select(this).property('value');

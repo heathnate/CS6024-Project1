@@ -152,12 +152,7 @@ class Scatterplot {
                     .style('display', 'block')
                     .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
                     .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
-                    // .html(`
-                    // <div class="tooltip-title">${d.County}, ${d.State}</div>
-                    // <div><i>$${d.median_household_income}</i></div>
-                    // <div><i>${d.percent_high_blood_pressure}%</i></div>
-                    // `);
-                    .html(vis.tooltipHelper.getTooltipText(d, vis.selectedXAttribute, vis.selectedYAttribute));
+                    .html(vis.tooltipHelper.getScatterplotTooltipText(d, vis.selectedXAttribute, vis.selectedYAttribute));
             })
             .on('mouseleave', () => {
                 d3.select('#scatterplotTooltip').style('display', 'none');

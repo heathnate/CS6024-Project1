@@ -1,7 +1,7 @@
 class TooltipHelper {
     constructor() {}
 
-    getTooltipText(d, selectedXAttribute, selectedYAttribute) {
+    getScatterplotTooltipText(d, selectedXAttribute, selectedYAttribute) {
         let tooltipText = '';
         if (selectedXAttribute === 'Median Household Income (USD)' && selectedYAttribute === 'High Blood Pressure (%)') {
             tooltipText = `
@@ -32,6 +32,13 @@ class TooltipHelper {
                     `
         }
         return tooltipText;
+    }
 
+    getChoroplethTooltipText(d, selectedAttribute) {
+        if (selectedAttribute === 'median_household_income') {
+            return d.properties.pop ? `<strong>$${d.properties.pop}</strong> median household income` : 'No data available'; 
+        } else if (selectedAttribute === 'percent_high_blood_pressure') {
+            return d.properties.pop ? `<strong>${d.properties.pop}%</strong> high blood pressure` : 'No data available';
+        }
     }
 }

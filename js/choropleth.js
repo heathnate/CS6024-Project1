@@ -20,6 +20,8 @@ class Choropleth {
       this.chart;
 
       this.selectedAttribute = 'median_household_income';
+
+      this.tooltipHelper = new TooltipHelper();
   
       this.initVis();
     }
@@ -110,8 +112,6 @@ class Choropleth {
 
       console.log('Update Vis');
 
-      console.log('Extent: ', vis.legendStops[0].value, vis.legendStops[1].value);
-      
       this.renderVis();
     }
 
@@ -137,44 +137,23 @@ class Choropleth {
         .attr('stroke-width', 0.2);
       
       // Tooltip event listeners
-      if (vis.selectedAttribute === 'median_household_income') {
-        vis.counties
-          .on('mousemove', (event, d) => {
-            const countyName = d.properties.name || 'Unknown County';
-            const stateName = d.properties.state || 'Unknown State';
-            const pop = d.properties.pop ? `<strong>$${d.properties.pop}</strong> median household income` : 'No data available'; 
-            d3.select('#choroplethTooltip')
-              .style('display', 'block')
-              .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
-              .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
-              .html(`
-                <div class="tooltip-title">${countyName}, ${stateName}</div>
-                <div>${pop}</div>
-              `);
-          })
-          .on('mouseleave', () => {
-            d3.select('#choroplethTooltip').style('display', 'none');
-          });
-      }
-      else if (vis.selectedAttribute === 'percent_high_blood_pressure') {
-        vis.counties
-          .on('mousemove', (event, d) => {
-            const countyName = d.properties.name || 'Unknown County';
-            const stateName = d.properties.state || 'Unknown State';
-            const pop = d.properties.pop ? `<strong>${d.properties.pop}%</strong> high blood pressure` : 'No data available'; 
-            d3.select('#choroplethTooltip')
-              .style('display', 'block')
-              .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
-              .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
-              .html(`
-                <div class="tooltip-title">${countyName}, ${stateName}</div>
-                <div>${pop}</div>
-              `);
-          })
-          .on('mouseleave', () => {
-            d3.select('#choroplethTooltip').style('display', 'none');
-          });
-      }
+      vis.counties
+        .on('mousemove', (event, d) => {
+          const countyName = d.properties.name || 'Unknown County';
+          const stateName = d.properties.state || 'Unknown State';
+          const pop = vis.tooltipHelper.getChoroplethTooltipText(d, vis.selectedAttribute);
+          d3.select('#choroplethTooltip')
+            .style('display', 'block')
+            .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
+            .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
+            .html(`
+              <div class="tooltip-title">${countyName}, ${stateName}</div>
+              <div>${pop}</div>
+            `);
+        })
+        .on('mouseleave', () => {
+          d3.select('#choroplethTooltip').style('display', 'none');
+        });
 
 
       vis.legend.selectAll('.legend-label')
