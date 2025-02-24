@@ -14,6 +14,8 @@ class Choropleth {
       this.data = _data;
   
       this.us = _data;
+
+      this.fullData = _data;
   
       this.active = d3.select(null);
       
@@ -28,7 +30,6 @@ class Choropleth {
     
     initVis() {
       let vis = this;
-      console.log("Init Vis");
   
       // Calculate inner chart size. Margin specifies the space around the actual chart.
       vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
@@ -96,8 +97,6 @@ class Choropleth {
       topojson.feature(vis.us, vis.us.objects.states).features.forEach(state => {
           stateByFIPS[state.id] = state.properties.name;  // Assuming states dataset has 'name' property
       });
-  
-      // Augment counties with state names
       vis.data.objects.counties.geometries.forEach(county => {
           county.properties.state = stateByFIPS[county.id.substring(0, 2)];  // Extract state FIPS from county FIPS
       });
@@ -110,25 +109,52 @@ class Choropleth {
 
       vis.g.selectAll('*').remove();
 
-      console.log('Update Vis');
+      const fullExtent = d3.extent(vis.fullData.objects.counties.geometries, d => d.properties.pop);
+      console.log(fullExtent);
 
+      if (vis.selectedAttribute === 'median_household_income') {
+        vis.colorScale = d3.scaleSequential(d3.interpolateBlues)
+          .domain(fullExtent);
+        const blueScale = d3.scaleSequential(d3.interpolateBlues).domain([0, 100]);
+        vis.legendStops = [
+            { color: blueScale(0), value: fullExtent[0], offset: 0},
+            { color: blueScale(100), value: fullExtent[1], offset: 100}
+        ];
+        vis.legendTitle.text('Median household income (USD)')
+      } else if (vis.selectedAttribute === 'percent_high_blood_pressure') {
+        vis.colorScale = d3.scaleSequential(d3.interpolateReds)
+          .domain(fullExtent);
+        const redScale = d3.scaleSequential(d3.interpolateReds).domain([0, 100]);
+        vis.legendStops = [
+            { color: redScale(0), value: fullExtent[0], offset: 0},
+            { color: redScale(100), value: fullExtent[1], offset: 100}
+        ];
+        vis.legendTitle.text('High blood pressure percentage (%)');
+      }
+      
+      
       this.renderVis();
     }
 
     renderVis() {
       let vis = this;
-      console.log('Render Vis');
-
+      
       vis.counties = vis.g.append("g")
         .attr("id", "counties")
         .selectAll("path")
-        .data(topojson.feature(vis.us, vis.us.objects.counties).features)
+        .data(topojson.feature(vis.data, vis.data.objects.counties).features)
         .enter().append("path")
         .attr("d", vis.path)
         // .attr("class", "county-boundary")
         .attr('fill', d => {
+          const countyId = d.id;
           if (d.properties.pop) {
-            return vis.colorScale(d.properties.pop);
+            let showCounty = vis.us.objects.counties.geometries.some(g => g.id == countyId);
+            if (showCounty) {
+              return vis.colorScale(d.properties.pop);
+            } else {
+              return '#a9a9a9';
+            }
           } else {
             return 'url(#lightstripe)';
           }

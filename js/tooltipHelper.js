@@ -9,21 +9,18 @@ class TooltipHelper {
                     <div><i>Median Household Income: $${d.Value}</i></div>
                     <div><i>High Blood Pressure: ${d.percent_high_blood_pressure}%</i></div>
                     `
-            // tooltipText = `Median Household Income: $${d.Value}<br>High Blood Pressure: ${d.percent_high_blood_pressure}%`;
         } else if (selectedXAttribute === 'Median Household Income (USD)' && selectedYAttribute === 'High Cholesterol (%)') {
             tooltipText = `
                     <div class="tooltip-title">${d.County}, ${d.State}</div>
                     <div><i>Median Household Income: $${d.Value}</i></div>
                     <div><i>High Cholesterol: ${d.percent_high_cholesterol}%</i></div>
                     `
-            // tooltipText = `Median Household Income: $${d.Value}<br>High Cholesterol: ${d.percent_high_cholesterol}%`;
         } else if (selectedXAttribute === 'Poverty Rate (%)' && selectedYAttribute === 'High Blood Pressure (%)') {
             tooltipText = `
                     <div class="tooltip-title">${d.County}, ${d.State}</div>
                     <div><i>Poverty Rate: ${d.Value}%</i></div>
                     <div><i>High Blood Pressure: ${d.percent_high_blood_pressure}%</i></div>
                     `
-            // tooltipText = `Poverty Rate: ${d.Value}%<br>High Blood Pressure: ${d.percent_high_blood_pressure}%`;
         } else if (selectedXAttribute === 'Poverty Rate (%)' && selectedYAttribute === 'High Cholesterol (%)') {
             tooltipText = `
                     <div class="tooltip-title">${d.County}, ${d.State}</div>

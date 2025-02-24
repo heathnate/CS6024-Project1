@@ -1,6 +1,5 @@
-console.log('Hello!');
-
-let incomeData, healthData, choropleth, choroplethMedIncomeData, choroplethPHBPData, geoData, scatterplotMedianIncomeData, scatterplotPovertyData;
+let incomeData, healthData, choropleth, choroplethMedIncomeData, choroplethPHBPData, geoData, scatterplotMedianIncomeData, scatterplotPovertyData, scatterplotHealthData, barchartIncomeData, barchartHealthData;
+let binFilter = [];
 
 // Scatterplot data manipulation
 // Load both datasets asynchronously and wait for completion
@@ -9,8 +8,6 @@ Promise.all([
     d3.csv('data/national_health_data_2024.csv')
 ])
 .then(([incomeData, healthData]) => {
-    console.log('Both datasets loaded.');
-
     // Filter income data to just median household income
     scatterplotMedianIncomeData = incomeData.filter(entry => entry.Attribute === 'MedHHInc');
     scatterplotMedianIncomeData.forEach(d => {
@@ -28,13 +25,13 @@ Promise.all([
         d.percent_high_cholesterol = +d.percent_high_cholesterol;
     });
 
-    healthData = healthData.filter(d => d.percent_high_blood_pressure >= 0 && d.percent_high_cholesterol >= 0);
+    scatterplotHealthData = healthData.filter(d => d.percent_high_blood_pressure >= 0 && d.percent_high_cholesterol >= 0);
 
     scatterplot = new Scatterplot({
         'parentElement': '#scatterplot',
         'containerHeight': 400,
         'containerWidth': 400
-    }, scatterplotMedianIncomeData, healthData);
+    }, scatterplotMedianIncomeData, scatterplotHealthData);
 })
 .catch(error => {
     console.error('Error: ', error);
@@ -66,6 +63,22 @@ Promise.all([
     });
 
     choroplethMedIncomeData = JSON.parse(JSON.stringify(geoData));
+    geoDataCopy = JSON.parse(JSON.stringify(geoData));
+
+    // Filter data to only counties that have recorded high blood pressure percentages
+    let phbpData = healthData.filter(entry => entry.percent_high_blood_pressure);
+    geoData.objects.counties.geometries.forEach(d => {
+        d.properties.pop = null;
+        for (let i = 0; i < phbpData.length; i++) {
+            if (d.id === phbpData[i].FIPS) {
+                d.properties.pop = +phbpData[i].percent_high_blood_pressure;
+            }
+        }
+    })
+    
+    choroplethPHBPData = JSON.parse(JSON.stringify(geoData));
+
+    geoData = JSON.parse(JSON.stringify(geoDataCopy));
 
     choropleth = new Choropleth ({
         parentElement: '#choropleth',
@@ -78,12 +91,21 @@ Promise.all([
 });
 
 // Bar chart data manipulation
-d3.csv('data/Rural_Atlas_Update24/Income.csv')
-.then(barchartIncomeData => {
-    barchartIncomeData = barchartIncomeData.filter(d => d.Attribute === 'MedHHInc');
-    barchartIncomeData.map(d => {
-        Value: +d.Value;
+Promise.all([
+    d3.csv('data/Rural_Atlas_Update24/Income.csv'),
+    d3.csv('data/national_health_data_2024.csv')
+])
+.then(([incomeData, healthData]) => {
+    incomeData = incomeData.filter(d => d.Attribute === 'MedHHInc');
+    incomeData.forEach(d => {
+        d.Value = +d.Value;
     });
+    barchartIncomeData = incomeData;
+
+    healthData.forEach(d => {
+        d.percent_high_blood_pressure = +d.percent_high_blood_pressure;
+    });
+    barchartHealthData = healthData.filter(d => d.percent_high_blood_pressure >= 0);
 
     barchart = new BarChart({
         parentElement: '#barchart',
@@ -156,7 +178,6 @@ d3.selectAll('#choroplethOptions').on('change', function() {
     }
     else if (selectedAttribute === 'percent_high_blood_pressure') {
         // Filter data to only counties that have recorded high blood pressure percentages
-        console.log('healthdata', healthData);
         let phbpData = healthData.filter(entry => entry.percent_high_blood_pressure);
         geoData.objects.counties.geometries.forEach(d => {
             d.properties.pop = null;
@@ -166,8 +187,9 @@ d3.selectAll('#choroplethOptions').on('change', function() {
                 }
             }
         })
-
-        choropleth.data = JSON.parse(JSON.stringify(geoData));
+        
+        choroplethPHBPData = JSON.parse(JSON.stringify(geoData));
+        choropleth.data = choroplethPHBPData;
         choropleth.colorScale = d3.scaleSequential(d3.interpolateReds)
             .domain(d3.extent(choropleth.data.objects.counties.geometries, d => d.properties.pop));
         
@@ -185,3 +207,111 @@ d3.selectAll('#choroplethOptions').on('change', function() {
 
     choropleth.updateVis();
 });
+
+// Barchart event listener
+d3.selectAll('#barchartOptions').on('change', function() {
+    let selectedAttribute = d3.select(this).property('value');
+    barchart.selectedAttribute = selectedAttribute;
+
+    if (selectedAttribute === 'median_household_income') {
+        barchart.data = barchartIncomeData;
+        barchart.valueAccessor = d => d.Value;
+        barchart.xAxisLabel = 'Median Household Income (USD)';
+        barchart.yAxisLabel = 'Number of Counties';
+        barchart.color = 'steelblue';
+        barchart.xTickInterval = 10000;
+    }
+    else if (selectedAttribute === 'percent_high_blood_pressure') {
+        barchart.data = barchartHealthData;
+        barchart.valueAccessor = d => d.percent_high_blood_pressure;
+        barchart.xAxisLabel = 'High Blood Pressure Percentage (%)';
+        barchart.yAxisLabel = 'Number of Counties';
+        barchart.color = '#df2c14';
+        barchart.xTickInterval = 10;
+    }
+
+    barchart.updateVis();
+});
+
+function filterDataFromBarchart() {
+    if (binFilter.length === 0) {
+        if (barchart.selectedAttribute === 'median_household_income') {
+            scatterplot.xData = scatterplotMedianIncomeData;
+            choropleth.us = choroplethMedIncomeData;
+        }
+        else if (barchart.selectedAttribute === 'percent_high_blood_pressure') {
+            scatterplot.yData = scatterplotHealthData;
+            choropleth.us = choroplethPHBPData;
+        }
+    }
+    else {
+        let filteredData = [];
+        // Set flag to false so scales do not update
+        if (barchart.selectedAttribute === 'median_household_income') {
+            // Scatterplot updates
+            // Reset HTML dropdown
+            document.getElementById('scatterplotXOptions').value = 'Median Household Income (USD)';
+            scatterplot.resetXScale = true;
+            scatterplot.selectedXAttribute = 'Median Household Income (USD)';
+            let scatterplotMedianIncomeDataCopy;
+            binFilter.forEach(b => {
+                scatterplotMedianIncomeDataCopy = scatterplotMedianIncomeData;
+                scatterplotMedianIncomeDataCopy = scatterplotMedianIncomeDataCopy.filter(d => d.Value >= b[0] && d.Value <= b[1]);
+                filteredData = filteredData.concat(scatterplotMedianIncomeDataCopy);
+            });
+            scatterplot.xData = filteredData;
+
+            filteredData = [];
+
+            // Choropleth updates
+            document.getElementById('choroplethOptions').value = 'median_household_income';
+            choropleth.selectedAttribute = 'median_household_income';
+            let choroplethMedIncomeDataCopy;
+            binFilter.forEach(b => {
+                choroplethMedIncomeDataCopy = JSON.parse(JSON.stringify(choroplethMedIncomeData));
+                choroplethMedIncomeDataCopy.objects.counties.geometries = choroplethMedIncomeDataCopy.objects.counties.geometries.filter(d => d.properties.pop >= b[0] && d.properties.pop <= b[1]);
+                filteredData = filteredData.concat(choroplethMedIncomeDataCopy.objects.counties.geometries);
+            })
+            choroplethMedIncomeDataCopy = JSON.parse(JSON.stringify(choroplethMedIncomeData));
+            choroplethMedIncomeDataCopy.objects.counties.geometries = filteredData;
+            choropleth.us = choroplethMedIncomeDataCopy;
+            choropleth.fullData = JSON.parse(JSON.stringify(choroplethMedIncomeData));
+            choropleth.data= JSON.parse(JSON.stringify(choroplethMedIncomeData));
+        }
+        else if (barchart.selectedAttribute === 'percent_high_blood_pressure') {
+            // Scatterplot updates
+            // Reset HTML dropdown
+            document.getElementById('scatterplotYOptions').value = 'High Blood Pressure (%)';
+            scatterplot.resetYScale = true;
+            scatterplot.selectedYAttribute = 'High Blood Pressure (%)';
+            let scatterplotHealthDataCopy;
+            binFilter.forEach(b => {
+                scatterplotHealthDataCopy = scatterplotHealthData;
+                scatterplotHealthDataCopy = scatterplotHealthDataCopy.filter(d => d.percent_high_blood_pressure >= b[0] && d.percent_high_blood_pressure <= b[1]);
+                filteredData = filteredData.concat(scatterplotHealthDataCopy);
+            });
+            scatterplot.yData = filteredData;
+            scatterplot.yValue = d => d.percent_high_blood_pressure;
+
+            filteredData = [];
+
+            // Choropleth updates
+            document.getElementById('choroplethOptions').value = 'percent_high_blood_pressure';
+            choropleth.selectedAttribute = 'percent_high_blood_pressure';
+            let choroplethPHBPDataCopy;
+            console.log(choroplethPHBPData);
+            binFilter.forEach(b => {
+                choroplethPHBPDataCopy = JSON.parse(JSON.stringify(choroplethPHBPData));
+                choroplethPHBPDataCopy.objects.counties.geometries = choroplethPHBPDataCopy.objects.counties.geometries.filter(d => d.properties.pop >= b[0] && d.properties.pop <= b[1]);
+                filteredData = filteredData.concat(choroplethPHBPDataCopy.objects.counties.geometries);
+            })
+            choroplethPHBPDataCopy = JSON.parse(JSON.stringify(choroplethPHBPData));
+            choroplethPHBPDataCopy.objects.counties.geometries = filteredData;
+            choropleth.us = choroplethPHBPDataCopy;
+            choropleth.fullData = JSON.parse(JSON.stringify(choroplethPHBPData));
+            choropleth.data = JSON.parse(JSON.stringify(choroplethPHBPData));
+        }
+    }
+    scatterplot.updateVis();
+    choropleth.updateVis();
+}

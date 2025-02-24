@@ -15,6 +15,9 @@ class Scatterplot {
         this.xData = _xData;
         this.yData = _yData;
 
+        this.resetXScale = false;
+        this.resetYScale = false;
+
         this.tooltipHelper = new TooltipHelper();
 
         this.dataFormatter = new DataFormatter();
@@ -32,8 +35,6 @@ class Scatterplot {
 
     initVis() {
         // Setting up the scatterplot
-        console.log('Scatterplot!');
-
         let vis = this;
 
         vis.data = vis.dataFormatter.mergeData(vis.xData, vis.yData);
@@ -41,9 +42,6 @@ class Scatterplot {
         // Width and height as the inner dimensions of the chart area
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
-
-        console.log("width: ", vis.width);
-        console.log("height: ", vis.height);
 
         // Define 'svg' as a child-element (g) from the drawing area and include spaces
         // Add <svg> element (drawing space)
@@ -67,6 +65,9 @@ class Scatterplot {
             .domain([0, d3.max(vis.data, vis.yValue)])
             .range([vis.height, 0])
             .nice();
+       
+        vis.initialXDomain = vis.xScale.domain();
+        vis.initialYDomain = vis.yScale.domain();
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
@@ -101,7 +102,7 @@ class Scatterplot {
             .attr('dy', '.71em')
             .text(vis.selectedYAttribute);
     
-        this.updateVis();
+        vis.updateVis();
     }
 
     updateVis() {
@@ -113,9 +114,23 @@ class Scatterplot {
         // Update data
         vis.data = vis.dataFormatter.mergeData(vis.xData, vis.yData);
 
-        // Update scales
-        vis.xScale.domain([0, d3.max(vis.xData, vis.xValue)]).nice();
-        vis.yScale.domain([0, d3.max(vis.yData, vis.yValue)]).nice();
+        // Update scales only if triggered through scatterplot dropdowns (AKA do not update scales if triggered via brushing)
+        // OR if the attribute brushed upon by another vis is not already selected
+        let scaleReset = false;
+        if (vis.resetXScale) {
+            vis.xScale.domain(vis.initialXDomain);
+            vis.resetXScale = false;
+            scaleReset = true;
+        }
+        if (vis.resetYScale){
+            vis.yScale.domain(vis.initialYDomain);
+            vis.resetYScale = false;
+            scaleReset = true;
+        }
+        if (!scaleReset) {
+            vis.xScale.domain([0, d3.max(vis.xData, vis.xValue)]).nice();
+            vis.yScale.domain([0, d3.max(vis.yData, vis.yValue)]).nice();
+        }
 
         // Update axes
         vis.xAxisG.call(vis.xAxis);
@@ -129,9 +144,9 @@ class Scatterplot {
             .text(vis.selectedYAttribute);
 
         // Update point color
-        this.pointColor = this.colorMap[`${this.selectedXAttribute}-${this.selectedYAttribute}`];
+        vis.pointColor = vis.colorMap[`${vis.selectedXAttribute}-${vis.selectedYAttribute}`];
         
-        this.renderVis();   
+        vis.renderVis();   
     }
 
     renderVis() {

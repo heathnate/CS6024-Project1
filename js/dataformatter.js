@@ -61,8 +61,3 @@ class DataFormatter {
 
     
 }
-
-// let test = new DataFormatter();
-// let test2 = test.getMedianIncomeData2();
-// console.log("test2: ", test2);
-// console.log("test: ", test.getPovertyData());

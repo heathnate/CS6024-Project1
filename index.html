@@ -46,8 +46,15 @@
     <div id="choroplethTooltip"></div>
     <svg height="5" width="5" xmlns="http://www.w3.org/2000/svg" version="1.1"> <defs> <pattern id="lightstripe" patternUnits="userSpaceOnUse" width="5" height="5"> <image xlink:href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgogIDxyZWN0IHdpZHRoPSc1JyBoZWlnaHQ9JzUnIGZpbGw9J3doaXRlJy8+CiAgPHBhdGggZD0nTTAgNUw1IDBaTTYgNEw0IDZaTS0xIDFMMSAtMVonIHN0cm9rZT0nIzg4OCcgc3Ryb2tlLXdpZHRoPScxJy8+Cjwvc3ZnPg==" x="0" y="0" width="5" height="5"> </image> </pattern> </defs></svg>
 
-    <svg id="barchart"></svg>
+    <div class="barchartContainer">
+        <svg id="barchart"></svg>
+    </div>
+    <select id="barchartOptions">
+        <option class="barchartAttribute" value="median_household_income">Median Household Income</option>
+        <option class="barchartAttribute" value="percent_high_blood_pressure">Percent High Blood Pressure</option>
+    </select>
     <div id="barchartTooltip"></div>
+
 
     <!-- <div class="resources">
         <h4>Resources</h4>
