@@ -1,4 +1,4 @@
-.scatterplotBarchartContainer {
+.scatterplot-barchart-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -16,26 +16,26 @@
 }
 
 /* Scatterplot */
-.scatterplotContainer {
+.scatterplot-container {
     display: flex;
     flex-direction: row;
 }
-.scatterplotOptionsContainer {
+.scatterplot-options-container {
     margin-top: 80px;
 }
-.scatterplotOptions {
+.scatterplot-options {
     display: flex;
     flex-direction: column;
 }
 .scatterplot-x-options {
     margin-bottom: 60px;
 }
-.scatterplotOptionsLabels {
+.scatterplot-options-labels {
     display: flex;
 }
 
 
-#scatterplotTooltip{
+#scatterplot-tooltip{
     position: absolute;
     display: none;
     background: #fff;
@@ -76,7 +76,7 @@
     display: flex;
 }
 
-.choroplethContainer {
+.choropleth-container {
     width: 750px;
     height: 400px;
     margin-left: 150px;
@@ -87,7 +87,7 @@
     overflow: visible;
 }
 
-#choroplethOptions {
+#choropleth-options {
     position: absolute;
     top: 230px;
     left: 420px;
@@ -97,7 +97,7 @@
     fill: white;
 }
 
-#choroplethTooltip{
+#choropleth-tooltip{
     position: absolute;
     display: none;
     background: #fff;
@@ -122,17 +122,17 @@
 }
 
 /* Bar Chart */
-#barchartOptions {
+#barchart-options {
     position: absolute;
-    top: 50px;
-    left: 350px;
+    top: 25px;
+    left: 355px;
 }
 
 .barchart-container {
     position: relative;
 }
 
-#barchartTooltip{
+#barchart-tooltip{
     position: absolute;
     display: none;
     background: #fff;
