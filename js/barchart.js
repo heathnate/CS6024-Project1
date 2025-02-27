@@ -76,19 +76,17 @@ class BarChart {
         vis.yAxisLabel = 'Number of Counties';
 
         // Append y-axis title (it is not being changed so it can be appended here)
-        vis.svg.append('text')
+        vis.yAxisTitle = vis.svg.append('text')
             .attr('class', 'y-axis-title')
-            .attr('transform', 'rotate(-90)')
-            .attr('x', -vis.height / 2)
-            .attr('y', -vis.config.margin.left + 10)
+            .attr('x', -50)
+            .attr('y', -30)
             .attr('dy', '1em')
-            .style('text-anchor', 'middle')
             .text(vis.yAxisLabel);
 
         // Append initial x-axis title
-        vis.svg.append('text')
+        vis.xAxisTitle = vis.svg.append('text')
             .attr('class', 'x-axis-title')
-            .attr('y', vis.height + vis.config.margin.bottom - 15)
+            .attr('y', vis.height + vis.config.margin.bottom - 20)
             .attr('x', vis.width / 2)
             .attr('dy', '1em')
             .style('text-anchor', 'middle')
@@ -110,14 +108,7 @@ class BarChart {
         let vis = this;
 
         // Update x-axis title
-        vis.svg.selectAll('.x-axis-title').remove();
-        vis.svg.append('text')
-            .attr('class', 'x-axis-title')
-            .attr('y', vis.height + vis.config.margin.bottom - 15)
-            .attr('x', vis.width / 2)
-            .attr('dy', '1em')
-            .style('text-anchor', 'middle')
-            .text(vis.xAxisLabel);
+        vis.xAxisTitle.text(vis.xAxisLabel);
 
         // Update axes and scales based on new data
         // Clear current bars

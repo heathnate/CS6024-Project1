@@ -29,8 +29,8 @@ Promise.all([
 
     scatterplot = new Scatterplot({
         'parentElement': '#scatterplot',
-        'containerHeight': 400,
-        'containerWidth': 400
+        'containerHeight': 300,
+        'containerWidth': 500
     }, scatterplotMedianIncomeData, scatterplotHealthData);
 })
 .catch(error => {
@@ -82,8 +82,8 @@ Promise.all([
 
     choropleth = new Choropleth ({
         parentElement: '#choropleth',
-        containerWidth: 800,
-        containerHeight: 400,
+        containerWidth: 650,
+        containerHeight: 300,
     }, geoData);
 })
 .catch(error => {
@@ -110,7 +110,7 @@ Promise.all([
     barchart = new BarChart({
         parentElement: '#barchart',
         containerWidth: 600,
-        containerHeight: 400
+        containerHeight: 300
     }, barchartIncomeData);
 })
 

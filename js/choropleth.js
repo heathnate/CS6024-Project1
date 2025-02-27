@@ -7,7 +7,7 @@ class Choropleth {
         margin: _config.margin || {top: 10, right: 10, bottom: 10, left: 10},
         tooltipPadding: _config.tooltipPadding || 10,
         legendBottom: 100,
-        legendLeft: 550,
+        legendLeft: 440,
         legendRectHeight: 12, 
         legendRectWidth: 150
       }

@@ -1,14 +1,39 @@
+.scatterplotBarchartContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.header {
+    top: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    height: 60px;
+    .project-title {
+        padding-right: 10px;
+    }
+}
+
 /* Scatterplot */
+.scatterplotContainer {
+    display: flex;
+    flex-direction: row;
+}
 .scatterplotOptionsContainer {
-    margin-left: 50px;
-    margin-top: 20px;
+    margin-top: 80px;
+}
+.scatterplotOptions {
+    display: flex;
+    flex-direction: column;
+}
+.scatterplot-x-options {
+    margin-bottom: 60px;
 }
 .scatterplotOptionsLabels {
     display: flex;
 }
-.scatterplotYOptionLabel {
-    margin-left: 80px;
-}
+
 
 #scatterplotTooltip{
     position: absolute;
@@ -28,6 +53,18 @@
     font-size: 14px;
     font-weight: 600;
 }
+.left-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.scatterplot-note {
+    width: 350px;
+    margin-left: 90px;
+}
+.resources {
+    margin-bottom: 60px;
+}
 
 /* Choropleth */
 #state-borders {
@@ -35,9 +72,14 @@
     stroke: #fff;
 }
 
+.choropleth-parent-container {
+    display: flex;
+}
+
 .choroplethContainer {
     width: 750px;
     height: 400px;
+    margin-left: 150px;
     position: relative;
 }
 
@@ -47,8 +89,8 @@
 
 #choroplethOptions {
     position: absolute;
-    top: 330px;
-    left: 520px;
+    top: 230px;
+    left: 420px;
 }
 
 .background {
@@ -80,6 +122,16 @@
 }
 
 /* Bar Chart */
+#barchartOptions {
+    position: absolute;
+    top: 50px;
+    left: 350px;
+}
+
+.barchart-container {
+    position: relative;
+}
+
 #barchartTooltip{
     position: absolute;
     display: none;
@@ -96,7 +148,4 @@
 
 .active {
     stroke: #000;
-}
-.inactive {
-    opacity: 0.4;
 }

@@ -93,8 +93,8 @@ class Scatterplot {
         // Append both axis titles
         vis.chart.append('text')
             .attr('class', 'x-axis-title')
-            .attr('y', vis.height - 15)
-            .attr('x', vis.width + 10)
+            .attr('y', vis.height + vis.config.margin.bottom - 15)
+            .attr('x', vis.width / 2 + 120)
             .attr('dy', '.71em')
             .style('text-anchor', 'end')
             .text(vis.selectedXAttribute);
@@ -102,7 +102,7 @@ class Scatterplot {
         vis.svg.append('text')
             .attr('class', 'y-axis-title')
             .attr('x', 0)
-            .attr('y', 0)
+            .attr('y', 25)
             .attr('dy', '.71em')
             .text(vis.selectedYAttribute);
 
