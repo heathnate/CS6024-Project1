@@ -30,6 +30,10 @@ class Scatterplot {
             "Poverty Rate (%)-High Cholesterol (%)": "#fcb001"
         };
 
+        // Add a callback property to store the function to call when brush selection changes
+        this.onBrushSelection = null;
+        this.selectedPoints = null;
+
         this.initVis();
     }
 
@@ -101,6 +105,20 @@ class Scatterplot {
             .attr('y', 0)
             .attr('dy', '.71em')
             .text(vis.selectedYAttribute);
+
+        // Create brush
+        vis.brush = d3.brush()
+            .extent([[0,0], [vis.width, vis.height]])
+            .on('brush', function({selection}) {
+                if (selection) vis.brushed(selection);
+            })
+            .on('end', function({selection}) {
+                if (!selection) vis.brushed(null);
+            });
+        
+        vis.brushG = vis.chart.append('g')
+            .attr('class', 'brush')
+            .call(vis.brush);
     
         vis.updateVis();
     }
@@ -172,7 +190,69 @@ class Scatterplot {
             .on('mouseleave', () => {
                 d3.select('#scatterplotTooltip').style('display', 'none');
             });
+    }
 
+    // React to brush events
+    brushed(selection) {
+        let vis = this;
+
+        if (selection) {
+            const [[x0, y0], [x1, y1]] = selection;
+
+            const xRange = [vis.xScale.invert(x0), vis.xScale.invert(x1)];
+            const yRange = [vis.yScale.invert(y1), vis.yScale.invert(y0)]; // Reverse order because of y-axis orientation
+
+            const selectionRange = {
+                x: {
+                    attribute: vis.selectedXAttribute,
+                    range: xRange
+                },
+                y: {
+                    attribute: vis.selectedYAttribute,
+                    range: yRange
+                }
+            };
+
+            const selectedPoints = vis.data.filter(d => {
+                const x = vis.xValue(d);
+                const y = vis.yValue(d);
+                return x >= xRange[0] && x <= xRange[1] && y >= yRange[0] && y <= yRange[1];
+            });
+
+            vis.chart.selectAll('.point')
+                .attr('fill', d => {
+                    const x = vis.xValue(d);
+                    const y = vis.yValue(d);
+                    return (x >= xRange[0] && x <= xRange[1] && 
+                            y >= yRange[0] && y <= yRange[1]) ? 
+                            '#ff0000' : vis.pointColor;
+                })
+
+            if (typeof vis.onBrushSelection === 'function') {
+                vis.onBrushSelection(selectionRange, selectionPoints);
+            }
+
+            // console.log('Selection Range: ', selectionRange);
+            // console.log('Selected Points: ', selectedPoints);
+            vis.selectedPoints = selectedPoints;
+            updateChoroplethAndBarchart(vis.selectedPoints);
+        } else {
+            vis.chart.selectAll('.point')
+                .attr('fill', vis.pointColor);
+
+            if (typeof vis.onBrushSelection === 'function') {
+                vis.onBrushSelection(null, null);
+            }
+
+            console.log('Brush selection cleared');
+            vis.selectedPoints = null;
+            updateChoroplethAndBarchart(vis.selectedPoints);
+        }
+    }
+
+    // Method to set the callback function
+    setOnBrushSelection(callback) {
+        this.onBrushSelection = callback;
     }
     
 }

@@ -299,7 +299,6 @@ function filterDataFromBarchart() {
             document.getElementById('choroplethOptions').value = 'percent_high_blood_pressure';
             choropleth.selectedAttribute = 'percent_high_blood_pressure';
             let choroplethPHBPDataCopy;
-            console.log(choroplethPHBPData);
             binFilter.forEach(b => {
                 choroplethPHBPDataCopy = JSON.parse(JSON.stringify(choroplethPHBPData));
                 choroplethPHBPDataCopy.objects.counties.geometries = choroplethPHBPDataCopy.objects.counties.geometries.filter(d => d.properties.pop >= b[0] && d.properties.pop <= b[1]);
@@ -307,6 +306,7 @@ function filterDataFromBarchart() {
             })
             choroplethPHBPDataCopy = JSON.parse(JSON.stringify(choroplethPHBPData));
             choroplethPHBPDataCopy.objects.counties.geometries = filteredData;
+            console.log(choroplethPHBPDataCopy);
             choropleth.us = choroplethPHBPDataCopy;
             choropleth.fullData = JSON.parse(JSON.stringify(choroplethPHBPData));
             choropleth.data = JSON.parse(JSON.stringify(choroplethPHBPData));
@@ -314,4 +314,39 @@ function filterDataFromBarchart() {
     }
     scatterplot.updateVis();
     choropleth.updateVis();
+}
+
+function updateChoroplethAndBarchart(selectedPoints) {
+    if (!selectedPoints) {
+        choropleth.us = JSON.parse(JSON.stringify(geoData));
+        barchart.data = barchartIncomeData;
+    }
+    else {
+        // Update choropleth with data from scatterplot brush
+        let choroplethMedIncomeDataCopy = JSON.parse(JSON.stringify(choroplethMedIncomeData));
+        choroplethMedIncomeDataCopy.objects.counties.geometries = choroplethMedIncomeDataCopy.objects.counties.geometries.filter(d => {
+            for (p in selectedPoints) {
+                if (d.id === selectedPoints[p].FIPS || d.id === '0' + selectedPoints[p].FIPS) {
+                    return true;
+                }
+            }
+            return false;
+        })
+        choropleth.us = choroplethMedIncomeDataCopy;
+
+        // Update barchart with data from scatterplot brush
+        let barchartIncomeDataCopy = JSON.parse(JSON.stringify(barchartIncomeData));
+        barchartIncomeDataCopy = barchartIncomeDataCopy.filter(d => {
+            for (p in selectedPoints) {
+                if (d.FIPS === selectedPoints[p].FIPS) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        barchart.data = barchartIncomeDataCopy;
+        barchart.updateScales = false;
+    }
+    choropleth.updateVis();
+    barchart.updateVis();
 }

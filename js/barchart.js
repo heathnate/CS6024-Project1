@@ -122,21 +122,26 @@ class BarChart {
         // Update axes and scales based on new data
         // Clear current bars
         vis.svg.selectAll('.bars').remove();
-        vis.bin = d3.bin()
+        if (vis.updateScales == true) {
+            vis.bin = d3.bin()
             .domain([0, d3.max(vis.data, vis.valueAccessor)])
             .value(vis.valueAccessor)
             .thresholds(10);
+
+            // Calculate the maximum value and round up to the nearest tick interval for x-axis
+            const xMax = d3.max(vis.bins, d => d.x1);
+            const xMaxRounded = Math.ceil(xMax / vis.xTickInterval) * vis.xTickInterval;
+
+            vis.xScale.domain([0, xMaxRounded]);
+        } else {
+            vis.updateScales = true;
+        }
+
         vis.bins = vis.bin(vis.data);
-
-        // Calculate the maximum value and round up to the nearest tick interval for x-axis
-        const xMax = d3.max(vis.bins, d => d.x1);
-        const xMaxRounded = Math.ceil(xMax / vis.xTickInterval) * vis.xTickInterval;
-
-        vis.xScale.domain([0, xMaxRounded]);
 
         // Calculate the maximum value and round up to the nearest tick interval for y-axis
         const yMax = d3.max(vis.bins, d => d.length);
-        const yTickInterval = 200; // Adjust this value based on your desired tick interval
+        const yTickInterval = yMax > 0 ? Math.max(100, Math.round(yMax / 800) * 100) : 100; 
         const yMaxRounded = Math.ceil(yMax / yTickInterval) * yTickInterval;
 
         vis.yScale.domain([0, yMaxRounded]).nice();

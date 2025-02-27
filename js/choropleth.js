@@ -110,7 +110,6 @@ class Choropleth {
       vis.g.selectAll('*').remove();
 
       const fullExtent = d3.extent(vis.fullData.objects.counties.geometries, d => d.properties.pop);
-      console.log(fullExtent);
 
       if (vis.selectedAttribute === 'median_household_income') {
         vis.colorScale = d3.scaleSequential(d3.interpolateBlues)
